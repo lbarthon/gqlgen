@@ -28,9 +28,10 @@ func ResolveField[T any](
 		recoverFromPanic,
 		nonNull,
 		Null,
-		func(ctx context.Context, res func() (T, error)) Marshaler {
+		func(ctx context.Context, fc *FieldContext, res func() (T, error)) Marshaler {
 			return WriterFunc(func(w io.Writer) {
 				ret, err := res()
+				fc.Result = ret
 				if err != nil {
 					oc.Error(ctx, err)
 					Null.MarshalGQL(w)
@@ -63,9 +64,10 @@ func ResolveFieldStream[T any](
 		recoverFromPanic,
 		nonNull,
 		nil,
-		func(ctx context.Context, res func() (<-chan T, error)) func(context.Context) Marshaler {
+		func(ctx context.Context, fc *FieldContext, res func() (<-chan T, error)) func(context.Context) Marshaler {
 			return func(ctx context.Context) Marshaler {
 				ch, err := res()
+				fc.Result = ch
 				if err != nil {
 					oc.Error(ctx, err)
 					return nil
@@ -101,7 +103,7 @@ func resolveField[T, R any](
 	recoverFromPanic bool,
 	nonNull bool,
 	defaultResult R,
-	result func(ctx context.Context, res func() (T, error)) R,
+	result func(ctx context.Context, fc *FieldContext, res func() (T, error)) R,
 ) (ret R) {
 	fc, err := initializeFieldContext(ctx, field)
 	if err != nil {
@@ -151,6 +153,5 @@ func resolveField[T, R any](
 		oc.Errorf(ctx, `unexpected type %T from middleware/directive chain, should be %T or func() (%T, error)`, resTmp, t, t)
 		return defaultResult
 	}
-	fc.Result = res
-	return result(ctx, res)
+	return result(ctx, fc, res)
 }
