@@ -130,7 +130,7 @@
 					}
 				{{- end }}
 				ret := make(graphql.Array, len(v))
-				{{- if and (not $type.IsScalar) (not $.Config.Resolver.ThunkResolvers) }}
+				{{- if not $type.IsScalar }}
 					var wg sync.WaitGroup
 					{{- if gt $.Config.Exec.WorkerLimit 0 }}
 						sm := semaphore.NewWeighted({{ $.Config.Exec.WorkerLimit }})
@@ -157,7 +157,6 @@
 								}
 							}()
 							{{- end }}
-							{{- if not $.Config.Resolver.ThunkResolvers }}
 							if !isLen1 {
 								{{- if gt $.Config.Exec.WorkerLimit 0 }}
 									defer func(){
@@ -168,16 +167,12 @@
 									defer wg.Done()
 								{{- end }}
 							}
-							{{- end }}
 							{{ if $useFunctionSyntaxForExecutionContext -}}
 							ret[i] = {{ $type.Elem.MarshalFunc }}(ctx, ec, sel, v[i])
 							{{- else -}}
 							ret[i] = ec.{{ $type.Elem.MarshalFunc }}(ctx, sel, v[i])
 							{{- end }}
 						}
-						{{- if $.Config.Resolver.ThunkResolvers }}
-						f(i)
-						{{- else }}
 						if isLen1 {
 							f(i)
 						} else {
@@ -191,7 +186,6 @@
 								go f(i)
 							{{- end }}
 						}
-						{{- end }}
 					{{ else }}
 						{{ if $useFunctionSyntaxForExecutionContext -}}
 						ret[i] = {{ $type.Elem.MarshalFunc }}(ctx, ec, sel, v[i])
@@ -200,7 +194,7 @@
 						{{- end }}
 					{{- end }}
 				}
-				{{- if and (not $type.IsScalar) (not $.Config.Resolver.ThunkResolvers) }}
+				{{- if not $type.IsScalar }}
 				wg.Wait()
 				{{- end }}
 				{{ if $type.Elem.GQL.NonNull }}
