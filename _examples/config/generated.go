@@ -206,6 +206,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputNewTodo,
+		ec.unmarshalInputNew_Todo,
 	)
 	first := true
 
@@ -2427,6 +2428,33 @@ func (ec *executionContext) unmarshalInputNewTodo(ctx context.Context, obj any) 
 				return it, err
 			}
 			it.UserID = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputNew_Todo(ctx context.Context, obj any) (NewTodo0, error) {
+	var it NewTodo0
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"i_am_incorrect"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "i_am_incorrect":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("i_am_incorrect"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IAmIncorrect = data
 		}
 	}
 

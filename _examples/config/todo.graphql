@@ -12,3 +12,7 @@ input NewTodo {
     text: String!
     userId: String!
 }
+
+input New_Todo {
+    i_am_incorrect: Boolean
+}

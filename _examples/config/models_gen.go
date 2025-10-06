@@ -10,6 +10,10 @@ type NewTodo struct {
 	UserID string `json:"userId"`
 }
 
+type NewTodo0 struct {
+	IAmIncorrect *bool `json:"i_am_incorrect,omitempty"`
+}
+
 type Query struct {
 }
 
